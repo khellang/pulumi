@@ -36,8 +36,7 @@ func (mod *modContext) isKubernetesOverlayModule() bool {
 	// The CustomResource overlay resource is directly under the apiextensions module
 	// and not under a version, so we include that. The Directory overlay resource is directly under the
 	// kustomize module. The resources under helm and yaml are always under a version.
-	return mod.mod == "apiextensions" || mod.mod == "kustomize" ||
-		strings.HasPrefix(mod.mod, "helm") || strings.HasPrefix(mod.mod, "yaml")
+	return mod.mod == "apiextensions" || mod.mod == "kustomize" || strings.HasPrefix(mod.mod, "yaml")
 }
 
 func (mod *modContext) isComponentResource() bool {
@@ -53,16 +52,6 @@ func (mod *modContext) isComponentResource() bool {
 func getKubernetesOverlayPythonFormalParams(modName string) []formalParam {
 	var params []formalParam
 	switch modName {
-	case "helm.sh/v2", "helm.sh/v3":
-		params = []formalParam{
-			{
-				Name: "config",
-			},
-			{
-				Name:         "opts",
-				DefaultValue: "=None",
-			},
-		}
 	case "kustomize":
 		params = []formalParam{
 			{
