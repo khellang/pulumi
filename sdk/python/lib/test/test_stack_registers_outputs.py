@@ -54,7 +54,7 @@ def my_mocks():
     finally:
         settings.configure(old_settings)
 
-        # Asserts are here in an unnusual place since it is tricky to
+        # Asserts are here in an unusual place since it is tricky to
         # place them inside a test and make the code run after the
         # test stack completes constructing.
         assert monitor.outputs is not None
