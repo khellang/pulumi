@@ -1248,7 +1248,8 @@ namespace Pulumi.Automation.Tests
                 () => upTaskWithOutput);
         }
 
-        [Fact]
+        // TODO[pulumi/pulumi#8228]: fix flakiness
+        [Fact(Skip="flaky")]
         public async Task InlineProgramExceptionPropagatesToCallerWithServiceProvider()
         {
             await using var provider = new ServiceCollection()
@@ -1434,6 +1435,7 @@ namespace Pulumi.Automation.Tests
             }
         }
 
+        // TODO[pulumi/pulumi#7467]
         [Fact(Skip = "Flakey test - https://github.com/pulumi/pulumi/issues/7467")]
         public async Task WorkspaceStackSupportsCancel()
         {
@@ -1508,17 +1510,21 @@ namespace Pulumi.Automation.Tests
         [InlineData("2.21.1-alpha.1234", true, false)]
         [InlineData("2.20.0", false, true)]
         [InlineData("2.22.0", false, true)]
+        // Invalid version check
+        [InlineData("invalid", false, true)]
+        [InlineData("invalid", true, false)]
         public void ValidVersionTheory(string currentVersion, bool errorExpected, bool optOut)
         {
             var testMinVersion = SemVersion.Parse("2.21.1");
+
             if (errorExpected)
             {
-                void ValidatePulumiVersion() => LocalWorkspace.ValidatePulumiVersion(testMinVersion, currentVersion, optOut);
+                void ValidatePulumiVersion() => LocalWorkspace.ParseAndValidatePulumiVersion(testMinVersion, currentVersion, optOut);
                 Assert.Throws<InvalidOperationException>(ValidatePulumiVersion);
             }
             else
             {
-                LocalWorkspace.ValidatePulumiVersion(testMinVersion, currentVersion, optOut);
+                LocalWorkspace.ParseAndValidatePulumiVersion(testMinVersion, currentVersion, optOut);
             }
         }
 

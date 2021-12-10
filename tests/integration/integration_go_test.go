@@ -1,4 +1,5 @@
 // Copyright 2016-2020, Pulumi Corporation.  All rights reserved.
+//go:build go || all
 // +build go all
 
 package ints
@@ -426,7 +427,6 @@ func TestConstructGo(t *testing.T) {
 		{
 			componentDir:          "testcomponent-python",
 			expectedResourceCount: 9,
-			env:                   []string{pulumiRuntimeVirtualEnv(t, filepath.Join("..", ".."))},
 		},
 		{
 			componentDir:          "testcomponent-go",
@@ -436,7 +436,9 @@ func TestConstructGo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.componentDir, func(t *testing.T) {
-			pathEnv := pathEnv(t, filepath.Join("construct_component", test.componentDir))
+			pathEnv := pathEnv(t,
+				filepath.Join("..", "testprovider"),
+				filepath.Join("construct_component", test.componentDir))
 			integration.ProgramTest(t, optsForConstructGo(t, test.expectedResourceCount, append(test.env, pathEnv)...))
 		})
 	}
@@ -546,7 +548,6 @@ func TestConstructPlainGo(t *testing.T) {
 		{
 			componentDir:          "testcomponent-python",
 			expectedResourceCount: 9,
-			env:                   []string{pulumiRuntimeVirtualEnv(t, filepath.Join("..", ".."))},
 		},
 		{
 			componentDir:          "testcomponent-go",
@@ -556,7 +557,9 @@ func TestConstructPlainGo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.componentDir, func(t *testing.T) {
-			pathEnv := pathEnv(t, filepath.Join("construct_component_plain", test.componentDir))
+			pathEnv := pathEnv(t,
+				filepath.Join("..", "testprovider"),
+				filepath.Join("construct_component_plain", test.componentDir))
 			integration.ProgramTest(t,
 				optsForConstructPlainGo(t, test.expectedResourceCount, append(test.env, pathEnv)...))
 		})
@@ -594,7 +597,6 @@ func TestConstructMethodsGo(t *testing.T) {
 		},
 		{
 			componentDir: "testcomponent-python",
-			env:          []string{pulumiRuntimeVirtualEnv(t, filepath.Join("..", ".."))},
 		},
 		{
 			componentDir: "testcomponent-go",
@@ -623,18 +625,24 @@ func TestConstructMethodsUnknownGo(t *testing.T) {
 	testConstructMethodsUnknown(t, "go", "github.com/pulumi/pulumi/sdk/v3")
 }
 
+func TestConstructMethodsResourcesGo(t *testing.T) {
+	testConstructMethodsResources(t, "go", "github.com/pulumi/pulumi/sdk/v3")
+}
+
+func TestConstructMethodsErrorsGo(t *testing.T) {
+	testConstructMethodsErrors(t, "go", "github.com/pulumi/pulumi/sdk/v3")
+}
+
 func TestConstructProviderGo(t *testing.T) {
 	const testDir = "construct_component_provider"
 	tests := []struct {
 		componentDir string
-		env          []string
 	}{
 		{
 			componentDir: "testcomponent",
 		},
 		{
 			componentDir: "testcomponent-python",
-			env:          []string{pulumiRuntimeVirtualEnv(t, filepath.Join("..", ".."))},
 		},
 		{
 			componentDir: "testcomponent-go",
@@ -644,7 +652,7 @@ func TestConstructProviderGo(t *testing.T) {
 		t.Run(test.componentDir, func(t *testing.T) {
 			pathEnv := pathEnv(t, filepath.Join(testDir, test.componentDir))
 			integration.ProgramTest(t, &integration.ProgramTestOptions{
-				Env: append(test.env, pathEnv),
+				Env: []string{pathEnv},
 				Dir: filepath.Join(testDir, "go"),
 				Dependencies: []string{
 					"github.com/pulumi/pulumi/sdk/v3",
@@ -760,4 +768,8 @@ func TestAboutGo(t *testing.T) {
 
 	// Assert we parsed the dependencies
 	assert.Contains(t, stdout, "github.com/BurntSushi/toml")
+}
+
+func TestConstructOutputValuesGo(t *testing.T) {
+	testConstructOutputValues(t, "go", "github.com/pulumi/pulumi/sdk/v3")
 }

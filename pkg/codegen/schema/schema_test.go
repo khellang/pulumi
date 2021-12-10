@@ -22,6 +22,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/blang/semver"
@@ -412,6 +413,43 @@ func TestMethods(t *testing.T) {
 	}
 }
 
+// TestIsOverlay tests that the IsOverlay field is set correctly for resources, types, and functions. Does not test
+// codegen.
+func TestIsOverlay(t *testing.T) {
+	t.Run("overlay", func(t *testing.T) {
+		pkgSpec := readSchemaFile(filepath.Join("schema", "overlay.json"))
+
+		pkg, err := ImportSpec(pkgSpec, nil)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, v := range pkg.Resources {
+			if strings.Contains(v.Token, "Overlay") {
+				assert.Truef(t, v.IsOverlay, "resource %q", v.Token)
+			} else {
+				assert.Falsef(t, v.IsOverlay, "resource %q", v.Token)
+			}
+		}
+		for _, v := range pkg.Types {
+			switch v := v.(type) {
+			case *ObjectType:
+				if strings.Contains(v.Token, "Overlay") {
+					assert.Truef(t, v.IsOverlay, "object type %q", v.Token)
+				} else {
+					assert.Falsef(t, v.IsOverlay, "object type %q", v.Token)
+				}
+			}
+		}
+		for _, v := range pkg.Functions {
+			if strings.Contains(v.Token, "Overlay") {
+				assert.Truef(t, v.IsOverlay, "function %q", v.Token)
+			} else {
+				assert.Falsef(t, v.IsOverlay, "function %q", v.Token)
+			}
+		}
+	})
+}
+
 // Tests that the method ReplaceOnChanges works as expected. Does not test
 // codegen.
 func TestReplaceOnChanges(t *testing.T) {
@@ -493,6 +531,54 @@ func TestReplaceOnChanges(t *testing.T) {
 			if tt.errors != nil || len(errList) > 0 {
 				assert.Equal(t, tt.errors, errList,
 					"Get correct error messages")
+			}
+		})
+	}
+}
+
+func TestValidateTypeToken(t *testing.T) {
+	cases := []struct {
+		name          string
+		input         string
+		expectError   bool
+		allowedExtras []string
+	}{
+		{
+			name:  "valid",
+			input: "example::typename",
+		},
+		{
+			name:        "invalid",
+			input:       "xyz::typename",
+			expectError: true,
+		},
+		{
+			name:  "valid-has-subsection",
+			input: "example:index:typename",
+		},
+		{
+			name:        "invalid-has-subsection",
+			input:       "not:index:typename",
+			expectError: true,
+		},
+		{
+			name:          "allowed-extras-valid",
+			input:         "other:index:typename",
+			allowedExtras: []string{"other"},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			spec := &PackageSpec{Name: "example"}
+			allowed := map[string]bool{"example": true}
+			for _, e := range c.allowedExtras {
+				allowed[e] = true
+			}
+			errors := spec.validateTypeToken(allowed, "type", c.input)
+			if c.expectError {
+				assert.True(t, errors.HasErrors())
+			} else {
+				assert.False(t, errors.HasErrors())
 			}
 		})
 	}

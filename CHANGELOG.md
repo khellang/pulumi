@@ -1,6 +1,191 @@
 CHANGELOG
 =========
 
+## 3.19.0 (2021-12-01)
+
+### Improvements
+
+- [codegen/go] - Remove `ResourcePtr` types from generated SDKs. Besides being
+  unnecessary--`Resource` types already accommodate `nil` to indicate the lack of
+  a value--the implementation of `Ptr` types for resources was incorrect, making
+  these types virtually unusable in practice.
+  [#8449](https://github.com/pulumi/pulumi/pull/8449)
+
+- [cli] - Allow interpolating plugin custom server URLs.
+  [#8507](https://github.com/pulumi/pulumi/pull/8507)
+
+### Bug Fixes
+
+- [cli/engine] - Accurately computes the fields changed when diffing with unhelpful providers. This
+  allows the `replaceOnChanges` feature to be respected for all providers.
+  [#8488](https://github.com/pulumi/pulumi/pull/8488)
+
+- [codegen/go] - Respect default values in Pulumi object types.
+  [#8411](https://github.com/pulumi/pulumi/pull/8400)
+
+## 3.18.1 (2021-11-22)
+
+### Improvements
+
+- [cli] - When running `pulumi new https://github.com/name/repo`, check 
+  for branch `main` if branch `master` doesn't exist.
+  [#8463](https://github.com/pulumi/pulumi/pull/8463)
+
+- [codegen/python] - Program generator now uses `fn_output` forms where
+  appropriate, simplifying auto-generated examples.
+  [#8433](https://github.com/pulumi/pulumi/pull/8433)
+
+- [codegen/go] - Program generator now uses fnOutput forms where
+  appropriate, simplifying auto-generated examples.
+  [#8431](https://github.com/pulumi/pulumi/pull/8431)
+
+- [codegen/dotnet] - Program generator now uses `Invoke` forms where
+  appropriate, simplifying auto-generated examples.
+  [#8432](https://github.com/pulumi/pulumi/pull/8432)
+
+### Bug Fixes
+
+- [cli/nodejs] - Allow specifying the tsconfig file used in Pulumi.yaml.
+  [#8452](https://github.com/pulumi/pulumi/pull/8452)
+
+- [codegen/nodejs] - Respect default values in Pulumi object types.
+  [#8400](https://github.com/pulumi/pulumi/pull/8400)
+
+- [sdk/python] - Correctly handle version checking python virtual environments.
+  [#8465](https://github.com/pulumi/pulumi/pull/8465)
+
+- [cli] - Catch expected errors in stacks with filestate backends.
+  [#8455](https://github.com/pulumi/pulumi/pull/8455)
+
+- [sdk/dotnet] - Do not attempt to serialize unknown values.
+  [#8475](https://github.com/pulumi/pulumi/pull/8475)
+
+## 3.18.0 (2021-11-17)
+
+### Improvements
+- [ci] - Adds CI detector for Buildkite
+  [#7933](https://github.com/pulumi/pulumi/pull/7933)
+
+- [cli] - Add `--exclude-protected` flag to `pulumi destroy`.
+  [#8359](https://github.com/pulumi/pulumi/pull/8359)
+
+- [cli] Add the ability to use `pulumi org set [name]` to set a default org
+  to use when creating a stacks in the Pulumi Service backend or self-hosted Service.
+  [#8352](https://github.com/pulumi/pulumi/pull/8352)
+
+- [schema] Add IsOverlay option to disable codegen for particular types.
+  [#8338](https://github.com/pulumi/pulumi/pull/8338)
+  [#8425](https://github.com/pulumi/pulumi/pull/8425)
+
+- [sdk/dotnet] - Marshal output values.
+  [#8316](https://github.com/pulumi/pulumi/pull/8316)
+
+- [sdk/python] - Unmarshal output values in component provider.
+  [#8212](https://github.com/pulumi/pulumi/pull/8212)
+
+- [sdk/nodejs] - Unmarshal output values in component provider.
+  [#8205](https://github.com/pulumi/pulumi/pull/8205)
+
+- [sdk/nodejs] - Allow returning failures from Call in the provider without setting result outputs.
+  [#8424](https://github.com/pulumi/pulumi/pull/8424)
+
+- [sdk/go] - Allow specifying Call failures from the provider.
+  [#8424](https://github.com/pulumi/pulumi/pull/8424)
+
+- [codegen/nodejs] - Program generator now uses `fnOutput` forms where
+  appropriate, simplifying auto-generated examples.
+  [#8434](https://github.com/pulumi/pulumi/pull/8434)
+
+### Bug Fixes
+
+- [engine] - Compute dependents correctly during targeted deletes.
+  [#8360](https://github.com/pulumi/pulumi/pull/8360)
+
+- [cli/engine] - Update command respects `--target-dependents`.
+  [#8395](https://github.com/pulumi/pulumi/pull/8395)
+
+- [docs] - Fix broken lists in dotnet docs.
+  [docs#6558](https://github.com/pulumi/docs/issues/6558)
+
+## 3.17.1 (2021-11-09)
+
+### Improvements
+
+- [codegen/docs] Edit docs codegen to document `$fnOutput` function
+  invoke forms in API documentation.
+  [#8287](https://github.com/pulumi/pulumi/pull/8287)
+
+### Bug Fixes
+
+- [automation/python] - Fix deserialization of events.
+  [#8375](https://github.com/pulumi/pulumi/pull/8375)
+
+- [sdk/dotnet] - Fixes failing preview for programs that call data
+  sources (`F.Invoke`) with unknown outputs.
+  [#8339](https://github.com/pulumi/pulumi/pull/8339)
+
+- [programgen/go] - Don't change imported resource names.
+  [#8353](https://github.com/pulumi/pulumi/pull/8353)
+
+
+## 3.17.0 (2021-11-03)
+
+### Improvements
+
+- [cli] - Reformat error message string in `sdk/go/common/diag/errors.go`.
+  [#8284](https://github.com/pulumi/pulumi/pull/8284)
+
+- [cli] - Add `--json` flag to `up`, `destroy` and `refresh`.
+
+  Passing the `--json` flag to `up`, `destroy` and `refresh` will stream JSON events from the engine to stdout.
+  For `preview`, the existing functionality of outputting a JSON object at the end of preview is maintained.
+  However, the streaming output can be extended to `preview` by using the `PULUMI_ENABLE_STREAMING_JSON_PREVIEW` environment variable.
+
+  [#8275](https://github.com/pulumi/pulumi/pull/8275)
+
+### Bug Fixes
+
+- [sdk/go] - Respect implicit parents in alias resolution.
+  [#8288](https://github.com/pulumi/pulumi/pull/8288)
+
+- [sdk/python] - Expand dependencies when marshaling output values.
+  [#8301](https://github.com/pulumi/pulumi/pull/8301)
+
+- [codegen/go] - Interaction between the `plain` and `default` tags of a type.
+  [#8254](https://github.com/pulumi/pulumi/pull/8254)
+
+- [sdk/dotnet] - Fix a race condition when detecting exceptions in stack creation.
+  [#8294](https://github.com/pulumi/pulumi/pull/8294)
+
+- [sdk/go] - Fix regression marshaling assets/archives.
+  [#8290](https://github.com/pulumi/pulumi/pull/8290)
+
+- [sdk/dotnet] - Don't panic on schema mismatches.
+  [#8286](https://github.com/pulumi/pulumi/pull/8286)
+
+- [codegen/python] - Fixes issue with `$fn_output` functions failing in
+  preview when called with unknown arguments.
+  [#8320](https://github.com/pulumi/pulumi/pull/8320)
+
+
+## 3.16.0 (2021-10-20)
+
+### Improvements
+
+- [codegen/dotnet] - Add helper function forms `$fn.Invoke` that
+  accept `Input`s, return an `Output`, and wrap the underlying
+  `$fn.InvokeAsync` call. This change addreses
+  [#5758](https://github.com/pulumi/pulumi/issues/) for .NET, making
+  it easier to compose functions/datasources with Pulumi resources.
+  NOTE for resource providers: the generated code requires Pulumi .NET
+  SDK 3.15 or higher.
+
+  [#7899](https://github.com/pulumi/pulumi/pull/7899)
+
+- [auto/dotnet] - Add `pulumi state delete` and `pulumi state unprotect` functionality
+  [#8202](https://github.com/pulumi/pulumi/pull/8202)
+
+
 ## 3.15.0 (2021-10-14)
 
 ### Improvements

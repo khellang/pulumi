@@ -408,6 +408,7 @@ func TestStackRenameAfterCreateServiceBackend(t *testing.T) {
 }
 
 func TestLocalStateLocking(t *testing.T) {
+	t.Skip() // TODO[pulumi/pulumi#7269] flaky test
 	e := ptesting.NewEnvironment(t)
 	defer func() {
 		if !t.Failed() {
@@ -421,9 +422,6 @@ func TestLocalStateLocking(t *testing.T) {
 	e.RunCommand("pulumi", "stack", "init", "foo")
 	e.RunCommand("yarn", "install")
 	e.RunCommand("yarn", "link", "@pulumi/pulumi")
-
-	// Enable self-managed backend locking
-	e.SetEnvVars([]string{fmt.Sprintf("%s=1", filestate.PulumiFilestateLockingEnvVar)})
 
 	// Run 10 concurrent updates
 	count := 10

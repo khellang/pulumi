@@ -31,7 +31,7 @@ jobs:
         language: ["nodejs", "python", "dotnet"]
     steps:
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - name: Set up Python ${{ matrix.python-version }}
@@ -48,10 +48,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org
           always-auth: true
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
-      - name: Install Twine
-        run: python -m pip install pip twine
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip requests wheel urllib3 chardet twine
       - name: Checkout Repo
         uses: actions/checkout@v2
       - name: Install pulumictl
@@ -84,7 +83,7 @@ jobs:
         go-version: [1.17.x]
     steps:
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout Repo
@@ -131,7 +130,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - name: Set up Python ${{ matrix.python-version }}
@@ -142,13 +141,15 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+      - run: mkdir -p ${{ runner.temp }}/opt/pulumi/nuget
       - run: dotnet nuget add source ${{ runner.temp }}/opt/pulumi/nuget
       - name: Set up Node ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip requests wheel urllib3 chardet
       - name: Setup git
         run: |
           git config --global user.email "you@example.com"
@@ -193,7 +194,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - name: Set up Python ${{ matrix.python-version }}
@@ -204,13 +205,15 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+      - run: mkdir -p ${{ runner.temp }}/opt/pulumi/nuget
       - run: dotnet nuget add source ${{ runner.temp }}/opt/pulumi/nuget
       - name: Set up Node ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install pipenv
-        uses: dschep/install-pipenv-action@v1
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip requests wheel urllib3 chardet
       - name: Install pulumictl
         uses: jaxxstorm/action-install-gh-release@v1.3.0
         with:
@@ -274,13 +277,16 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ matrix.dotnet }}
+      - name: Create Local Nuget
+        run: mkdir -p "${{ env.PULUMI_LOCAL_NUGET }}"
+        shell: bash
       - run: dotnet nuget add source ${{ env.PULUMI_LOCAL_NUGET }}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go-version }}
       - name: Set up Python ${{ matrix.python-version }}
@@ -289,13 +295,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Clean
         run: dotnet nuget locals all --clear
-      - name: Create Local Nuget
-        run: mkdir -p "D:\\Pulumi\\nuget"
-        shell: bash
       - name: Install Python Deps
         run: |
           pip3 install pyenv-win
-          pip3 install pipenv
       - name: Set Build Env Vars
         shell: bash
         run: |
@@ -338,7 +340,7 @@ jobs:
           cd src\github.com\${{ github.repository }}
           dotnet msbuild /t:Build /v:Detailed build.proj /p:PulumiRoot="D:\\Pulumi" /p:PythonVersion="${{ matrix.python-version }}"
   dispatch-docker-containers-ci-build:
-    name: Trigger Docker containers CI build
+    name: Dispatch Docker containers CI build
     needs: [publish-binaries, publish-sdks]
     runs-on: ubuntu-latest
     steps:
@@ -351,5 +353,5 @@ jobs:
       - name: Fetch Tags
         run: |
           git fetch --quiet --prune --unshallow --tags
-      - name: Run Container Tests
+      - name: Dispatch event
         run: pulumictl dispatch -r pulumi/pulumi-docker-containers -c ci-build $(pulumictl get version --language generic -o)
